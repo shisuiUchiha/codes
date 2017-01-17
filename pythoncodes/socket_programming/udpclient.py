@@ -16,3 +16,5 @@ receivedmessage,serveraddress=socketclient.recvfrom(2048)
 
 print receivedmessage
 print serveraddress
+
+socketclient.close()

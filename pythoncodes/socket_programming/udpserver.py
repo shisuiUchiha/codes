@@ -14,3 +14,4 @@ while 1:
 	modified_message=message.upper()
 	socketserver.sendto(modified_message,clientaddress)
 
+socketserver.close()
