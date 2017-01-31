@@ -1,5 +1,6 @@
 import requests
 import xml.etree.ElementTree as ET 
+import time
 
 
 def get_url(url):
@@ -24,7 +25,7 @@ def match_watch(get_root,match_id):
 	Id=match_id
 	#print Id
 	#print type(Id)
-	if (int(Id)<10000):
+	if (int(Id)<30000):
 		for child in root:
 			if (child.tag=="match"):
 				if(child.attrib['id']==Id):
@@ -37,10 +38,15 @@ def match_watch(get_root,match_id):
 
 def get_match_details(second_root):
 	child=second_root
-	print "MATCH TYPE: "+ child.attrib['type']+"\n"
-	print "MATCH NO:   "+ child.attrib['mnum']+"\n"
-	print "SERIES:     "+ child.attrib['srs']+"\n"
-	print "VENUE:      "+ child.attrib['grnd']+":"+child.attrib['vcity']+":"+child.attrib['vcountry']+"\n"
+	dic=child.attrib
+	if 'type' in dic:
+		print "MATCH TYPE: "+ child.attrib['type']+"\n"
+	if 'mnum' in dic:
+		print "MATCH NO:   "+ child.attrib['mnum']+"\n"
+	if 'srs' in dic:
+		print "SERIES:     "+ child.attrib['srs']+"\n"
+	if 'grnd' in dic:
+		print "VENUE:      "+ child.attrib['grnd']+":"+child.attrib['vcity']+":"+child.attrib['vcountry']+"\n"
 	return child.attrib['type']
 
 
@@ -60,10 +66,53 @@ def get_odi_scores(second_root):
 		elif (childs.tag=="state"):
 			if(childs.attrib['mchState']=="inprogress"):
 				print childs.attrib['status']
+				return "inprogress"
+			else:
+				print childs.attrib['status']
+				return "complete"
+				break
+
+def get_t20_scores(second_root):
+	child=second_root
+	for childs in child:
+		if (childs.tag=="mscr"):
+			for m_child in childs:
+				if(m_child.tag=="btTm"):
+					print "Batting Team - "+m_child.attrib['sName']
+					for a_child in m_child:
+						print a_child.attrib['r']+" - "+a_child.attrib['wkts']+" in "+a_child.attrib['ovrs']
+				elif(m_child.tag=="blgTm"):
+					print "Bowling Team - "+m_child.attrib['sName']
+					for a_child in m_child:
+						print a_child.attrib['r']+" - "+a_child.attrib['wkts']+" in "+a_child.attrib['ovrs']
+		elif (childs.tag=="state"):
+			if(childs.attrib['mchState']=="inprogress"):
+				print childs.attrib['status']
+				return "inprogress"
+			else:
+				print childs.attrib['status']
+				return "complete"
+				break
+		
+def get_test_scores(second_root):#has to change this quite a bit data not available at present
+	child=second_root
+	for childs in child:
+		if (childs.tag=="mscr"):
+			for m_child in childs:
+				if(m_child.tag=="btTm"):
+					print "Batting Team - "+m_child.attrib['sName']
+					for a_child in m_child:
+						print a_child.attrib['r']+" - "+a_child.attrib['wkts']+" in "+a_child.attrib['ovrs']
+				elif(m_child.tag=="blgTm"):
+					print "Bowling Team - "+m_child.attrib['sName']
+					for a_child in m_child:
+						print a_child.attrib['r']+" - "+a_child.attrib['wkts']+" in "+a_child.attrib['ovrs']
+		elif (childs.tag=="state"):
+			if(childs.attrib['mchState']=="inprogress"):
+				print childs.attrib['status']
 			else:
 				print childs.attrib['status']
 				break
-		
 
 
 
@@ -75,11 +124,20 @@ second_root=match_watch(got_root,match_id)
 typo=get_match_details(second_root)
 
 if(typo=="TEST"):
-	get_test_scores(second_root)
+	s=get_test_scores(second_root)
+	while(s=='inprogress'):
+		time.sleep(300)
+		s=get_test_scores(second_root)
 elif(typo=="ODI"):
-	get_odi_scores(second_root)
+	s=get_odi_scores(second_root)
+	while(s=='inprogress'):
+		time.sleep(300)
+		s=get_odi_scores(second_root)
 else:
-	get_t20_scores(second_root)
+	s=get_t20_scores(second_root)
+	while(s=='inprogress'):
+		time.sleep(300)
+		s=get_t20_scores(second_root)
 
 
 
